@@ -6,9 +6,53 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = 3000;
+
+// Ruta al archivo que guarda el contador
+const COUNTER_FILE = path.join(__dirname, 'expedientes-counter.json');
+
+// Función para obtener el siguiente número de expediente
+function getNextExpedienteNumber() {
+    try {
+        let counter;
+        if (fs.existsSync(COUNTER_FILE)) {
+            const data = JSON.parse(fs.readFileSync(COUNTER_FILE, 'utf8'));
+            counter = data.ultimoNumero;
+        } else {
+            counter = 214636; // Número inicial
+        }
+        
+        // Incrementar el contador
+        counter++;
+        
+        // Guardar el nuevo valor
+        fs.writeFileSync(COUNTER_FILE, JSON.stringify({ ultimoNumero: counter }, null, 2));
+        
+        return counter;
+    } catch (error) {
+        console.error('Error manejando el contador de expedientes:', error);
+        throw error;
+    }
+}
+
+// Endpoint para obtener el siguiente número de expediente
+app.get('/api/proximo-numero', (req, res) => {
+    try {
+        const numero = getNextExpedienteNumber();
+        const añoActual = new Date().getFullYear();
+        const numeroFormateado = `${añoActual}-${numero.toString().padStart(7, '0')}`;
+        res.json({ numeroExpediente: numeroFormateado });
+    } catch (error) {
+        res.status(500).json({ error: 'Error generando número de expediente' });
+    }
+});
 const TOKEN = "sk_10921.ytFcmj7MvF6ZVKoEKmL9P2aAixNO8fRV";
 
 app.use(cors({ origin: "*" }));

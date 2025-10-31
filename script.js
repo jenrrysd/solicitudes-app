@@ -262,22 +262,21 @@ const UPLOAD_PDF_URL = window.UPLOAD_PDF_URL || 'http://localhost:3000/upload-pd
 
 // Definición del generador de expedientes
 const GeneradorExpediente = {
-    claveStorage: 'ultimoNumeroExpediente',
-    
-    obtenerNumeroActual() {
-        const numeroGuardado = localStorage.getItem(this.claveStorage);
-        return numeroGuardado ? parseInt(numeroGuardado) : 214636;
-    },
-    
-    guardarNumeroActual(numero) {
-        localStorage.setItem(this.claveStorage, numero.toString());
-    },
-    
-    obtenerNumeroFormateado() {
-        const numero = this.obtenerNumeroActual() + 1;
-        this.guardarNumeroActual(numero);
-        const añoActual = new Date().getFullYear();
-        return `${añoActual}-${numero.toString().padStart(7, '0')}`;
+    async obtenerNumeroFormateado() {
+        try {
+            const response = await fetch('/api/proximo-numero');
+            if (!response.ok) {
+                throw new Error('Error obteniendo número de expediente');
+            }
+            const data = await response.json();
+            return data.numeroExpediente;
+        } catch (error) {
+            console.error('Error al obtener número de expediente:', error);
+            // Fallback a timestamp si falla la petición
+            const timestamp = Date.now();
+            const añoActual = new Date().getFullYear();
+            return `${añoActual}-ERR${timestamp}`;
+        }
     }
 };
 
@@ -1812,7 +1811,7 @@ async function generarPDF() {
 
 
     // Generar número de expediente único usando el GeneradorExpediente global
-    const numeroExpediente = GeneradorExpediente.obtenerNumeroFormateado();
+    const numeroExpediente = await GeneradorExpediente.obtenerNumeroFormateado();
 
     // Guardar el PDF con el nombre en formato: 2025-0214637.pdf
     const nombreArchivo = numeroExpediente + '.pdf';
