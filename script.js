@@ -280,9 +280,6 @@ const GeneradorExpediente = {
     }
 };
 
-// Crear instancia global
-const generadorExpediente = GeneradorExpediente;
-
 const distritosData = {
     "1501": [
         { codigo: "150101", nombre: "LIMA" },
@@ -1615,8 +1612,45 @@ function enviarSolicitud() {
 }
 
 async function generarPDF() {
-    let expedienteId = window.generadorExpediente || "EXP-" + Date.now();
-    window.generadorExpediente = expedienteId;
+    let numeroExpediente;
+    try {
+        console.log('Iniciando generación de PDF...');
+        
+        // Verificar que todas las dependencias estén cargadas
+        console.log('Verificando dependencias...');
+        console.log('jsPDF disponible:', typeof jsPDF !== 'undefined');
+        console.log('window.jspdf:', !!window.jspdf);
+        console.log('window.jsPDF:', !!window.jsPDF);
+        console.log('Swal disponible:', typeof Swal !== 'undefined');
+        
+        // Verificar que jsPDF está disponible
+        if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
+            throw new Error('La librería jsPDF no está cargada correctamente');
+        }
+        
+        // Verificar que GeneradorExpediente esté definido
+        if (typeof GeneradorExpediente === 'undefined') {
+            throw new Error('El generador de expedientes no está inicializado');
+        }
+
+        // Obtener el número de expediente usando GeneradorExpediente
+        numeroExpediente = await GeneradorExpediente.obtenerNumeroFormateado();
+        console.log('Número de expediente generado:', numeroExpediente);
+        
+        if (!numeroExpediente) {
+            throw new Error('No se pudo generar el número de expediente');
+        }
+
+    } catch (error) {
+        console.error('Error al inicializar la generación del PDF:', error);
+        await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Hubo un problema al generar el PDF: ' + error.message,
+            confirmButtonText: 'Aceptar'
+        });
+        return;
+    }
     // En un caso real, aquí se usaría una librería como jsPDF
     // Para este ejemplo, simulamos la generación del PDF
     const datos = recopilarDatosFormulario();
@@ -1630,9 +1664,25 @@ async function generarPDF() {
         console.error('DEBUG generarPDF error al leer dependenciaInfo:', e);
     }
 
+    console.log('Creando instancia de PDF...');
     // Crear instancia de jsPDF
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    let doc;
+    try {
+        // Intentar diferentes formas de acceder a jsPDF
+        if (typeof jsPDF !== 'undefined') {
+            doc = new jsPDF();
+        } else if (window.jspdf && window.jspdf.jsPDF) {
+            doc = new window.jspdf.jsPDF();
+        } else if (window.jsPDF) {
+            doc = new window.jsPDF();
+        } else {
+            throw new Error('La librería jsPDF no está disponible');
+        }
+        console.log('Instancia de PDF creada correctamente');
+    } catch (error) {
+        console.error('Error al crear instancia de jsPDF:', error);
+        throw error;
+    }
 
     //doc.addImage(image, 'png', 60, 15)
     const logoUrl = './assets/img/logo_mtpe_main.png'; // Ajusta la ruta de tu logo
@@ -1811,14 +1861,17 @@ async function generarPDF() {
 
 
     // Generar número de expediente único usando el GeneradorExpediente global
-    const numeroExpediente = await GeneradorExpediente.obtenerNumeroFormateado();
+    const numeroExpedienteArchivo = await GeneradorExpediente.obtenerNumeroFormateado();
 
     // Guardar el PDF con el nombre en formato: 2025-0214637.pdf
-    const nombreArchivo = numeroExpediente + '.pdf';
+    const nombreArchivo = numeroExpedienteArchivo + '.pdf';
     // Enviar el PDF al servidor para que lo guarde manteniendo el nombre original
     try {
+        console.log('Generando blob del PDF...');
         const pdfBlob = await doc.output('blob');
+        console.log('PDF blob generado correctamente');
 
+        console.log('Preparando FormData para envío...');
         const formData = new FormData();
         formData.append('pdf', pdfBlob, nombreArchivo);
         formData.append('numeroExpediente', numeroExpediente);
