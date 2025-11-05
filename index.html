@@ -160,8 +160,8 @@
                     ">
                 Buscar RUC
             </button>
-            <!-- Botón para búsqueda DNI -->
-            <button type="button" id="btnBuscarDNI" onclick="consultarDNI()" style="
+            <!-- Botón para búsqueda DNI onclick="consultarDNI()"-->
+            <button type="button" id="btnBuscarDNI" style="
                         padding: 0 16px;
                         background: #28a745;
                         color: white;
@@ -638,10 +638,10 @@
                 </div>
                 <div class="dt k1">
                     <input id="vEdad" name="vEdad" class="input upper" maxlength="3" style="width: 18%"
-                        oninput="validateAgeImmediately(this)" onkeypress="return isNumberKey(this);" />
+                        oninput="validateAgeImmediately(this)" onkeypress="return(this);" />
                     <!-- onblur="validateAge(this);" onkeypress="return isNumberKey(this);" /> -->
                 </div>
-                <div id="divCelular" class="dt"></div>
+                <div id="divEdad" class="dt"></div>
             </div>
 
             <div class="linefiltro floatleft" style="width: 100%;margin-top: 3%;">

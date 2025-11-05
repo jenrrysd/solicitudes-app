@@ -1476,84 +1476,14 @@ function actualizarContador(textAreaId, labelId, maxLength) {
 
 function validarFormulario() {
     let esValido = true;
-    //const esMenorEdad = document.getElementById('radioMenorSi').checked;
-    const esMenorEdad = document.getElementById('radioMenorSi') ? document.getElementById('radioMenorSi').checked : false;
 
-    // Validar tipo de persona
-    const ddlTipoPersona = document.getElementById('ddlTipoPersona');
-    if (ddlTipoPersona && ddlTipoPersona.value === '-') {
-        mostrarError('divTipoPersona', '');
-        esValido = false;
-    } else {
-        ocultarError('divTipoPersona');
-    }
-
-    // Validar tipo de documento (solo si NO es menor de edad)
-    const ddlTipoDocumento = document.getElementById('ddlTipoDocumento');
-    if (ddlTipoDocumento && !esMenorEdad && ddlTipoDocumento.value === '-') {
-        mostrarError('divTipoDocumento', '');
-        esValido = false;
-    } else {
-        ocultarError('divTipoDocumento');
-    }
-
-    // Validar número de documento (solo si NO es menor de edad)
-    const txtNumDoc = document.getElementById('txtNumDoc');
-    if (txtNumDoc && !esMenorEdad && (!txtNumDoc.value || txtNumDoc.value.trim() === '')) {
-        mostrarError('divNumDoc', '');
-        esValido = false;
-    } else {
-        ocultarError('divNumDoc');
-    }
-
-    // Validar descripción
+    // Validación básica - solo descripción requerida
     const txtDescripcion = document.getElementById('txtDescripcion');
     if (txtDescripcion && (!txtDescripcion.value || txtDescripcion.value.trim() === '' || txtDescripcion.value.length < 15)) {
-        mostrarError('divDescripcion', '');
+        mostrarError('divDescripcion', 'Debe ingresar la información solicitada (mínimo 15 caracteres)');
         esValido = false;
     } else {
         ocultarError('divDescripcion');
-    }
-
-    // Validar forma de entrega
-    const ddlFormaEntrega = document.getElementById('ddlFormaEntrega');
-    if (ddlFormaEntrega && ddlFormaEntrega.value === '-') {
-        mostrarError('divFormaEntregaRequired', '');
-        esValido = false;
-    } else {
-        ocultarError('divFormaEntregaRequired');
-    }
-
-    // Validar forma de notificación
-    const ddlFormaNotificacion = document.getElementById('ddlFormaNotificacion');
-    if (ddlFormaNotificacion && ddlFormaNotificacion.value === '-') {
-        mostrarError('divFormaNotificacionRequired', '');
-        esValido = false;
-    } else {
-        ocultarError('divFormaNotificacionRequired');
-    }
-
-    // Validar dependencia que posee la información (OBLIGATORIO)
-    const ddlUnidadOrganica = document.getElementById('ddlUnidadOrganica');
-    if (ddlUnidadOrganica && ddlUnidadOrganica.value === '-') {
-        mostrarError('divUOrganica', '');
-        esValido = false;
-    } else {
-        ocultarError('divUOrganica');
-    }
-
-    // Validar edad si es persona natural y se ha seleccionado menor/mayor de edad
-    const vEdad = document.getElementById('vEdad');
-    const radioMenorSi = document.getElementById('radioMenorSi');
-    const radioMenorNo = document.getElementById('radioMenorNo');
-
-    if (document.getElementById('ddlTipoPersona').value === '1' &&
-        (radioMenorSi.checked || radioMenorNo.checked) &&
-        vEdad && vEdad.value.trim() !== "") {
-
-        if (!validateAge(vEdad)) {
-            esValido = false;
-        }
     }
 
     return esValido;
@@ -1570,10 +1500,15 @@ function mostrarError(elementId, mensaje) {
         errorEl.className = 'error-msg';
         // Mantener estilos sencillos aquí para evitar depender de CSS externo
         errorEl.style.marginTop = '4px';
+        errorEl.style.marginBottom = '4px';
         elemento.appendChild(errorEl);
     }
 
-    errorEl.innerHTML = '<span style="color: red; font-size: 12px;">' + mensaje + '</span>';
+    if (mensaje && mensaje.trim() !== '') {
+        errorEl.innerHTML = '<span style="color: red; font-size: 12px; font-weight: bold;">⚠ ' + mensaje + '</span>';
+    } else {
+        errorEl.innerHTML = '<span style="color: red; font-size: 12px; font-weight: bold;">⚠ Este campo es obligatorio</span>';
+    }
 }
 
 function ocultarError(elementId) {
@@ -1589,24 +1524,26 @@ function ocultarError(elementId) {
 //////////////////////////////////////////////////
 
 function enviarSolicitud() {
+    console.log('Iniciando envío de solicitud...');
+    
     if (!validarFormulario()) {
-        alert('Por favor, completa todos los campos obligatorios.');
+        alert('Por favor, complete la información solicitada (mínimo 15 caracteres).');
         return;
     }
+    
+    console.log('Validación exitosa, generando PDF...');
 
     // Mostrar preloader
     document.getElementById('preloader').style.display = 'block';
 
-    // Simular envío (en un caso real aquí iría la llamada al servidor)
-    setTimeout(function () {
+    // Simular envío
+    setTimeout(async function () {
         document.getElementById('preloader').style.display = 'none';
 
-        // Generar PDF
-        generarPDF();
+        // Generar PDF (await para esperar que termine)
+        await generarPDF();
 
-        // Limpiar formulario después de generar el PDF
-        limpiarFormulario();
-
+        // El limpiarFormulario() ahora se ejecuta DENTRO de generarPDF()
         alert('Solicitud enviada correctamente. Se ha generado un PDF con los datos.');
     }, 2000);
 }
@@ -1657,12 +1594,10 @@ async function generarPDF() {
 
     // En un caso real, aquí se generaría el PDF con los datos
     console.log('Datos para el PDF:', datos);
-    // Debug temporal: confirmar que dependenciaInfo viene correctamente
-    try {
-        console.log('DEBUG generarPDF - dependenciaInfo:', datos.dependenciaInfo);
-    } catch (e) {
-        console.error('DEBUG generarPDF error al leer dependenciaInfo:', e);
-    }
+    
+    // Mostrar datos recopilados para verificación
+    console.log('Datos recopilados para el PDF:', datos);
+    // Verificar los datos recopilados
 
     console.log('Creando instancia de PDF...');
     // Crear instancia de jsPDF
@@ -1733,7 +1668,14 @@ async function generarPDF() {
         doc.setFont('helvetica', 'bold');
         doc.text(etiqueta + ':', marginLeft, y);
         doc.setFont('helvetica', 'normal');
-        doc.text(valor || 'No especificado', marginLeft + 60, y);
+        
+        // Usar valor directamente si no es null/undefined, solo usar "No especificado" si realmente está vacío
+        let textoFinal = valor;
+        if (valor === null || valor === undefined || valor === '') {
+            textoFinal = 'No especificado';
+        }
+        
+        doc.text(textoFinal, marginLeft + 60, y);
         return y + 6;
     }
 
@@ -1941,17 +1883,9 @@ async function generarPDF() {
     //     });
     // }
 
-    // Mensaje mejorado
-    // Swal.fire({
-    //     icon: 'success',
-    //     title: 'Solicitud Registrada',
-    //     html: `✅ PDF generado correctamente<br><br>
-    //            <strong>N° de Expediente:</strong> ${numeroExpediente}<br>
-    //            <strong>Archivo:</strong> ${nombreArchivo}<br>
-    //            <strong>Ubicación:</strong> Descargas/pdfs/<br>
-    //            <em>El archivo se moverá automáticamente a la carpeta pdfs</em>`,
-    //     confirmButtonText: 'Aceptar'
-    // });
+    // Limpiar formulario SOLO después de que el PDF se haya generado completamente
+    console.log('PDF generado exitosamente, limpiando formulario...');
+    limpiarFormulario();
 }
 
 
@@ -1970,21 +1904,31 @@ function recopilarDatosFormulario() {
     const vLenguaMaterna = document.getElementById('vLenguaMaterna');
     const vNacionalidad = document.getElementById('vNacionalidad');
 
-    const esMenorEdad = document.getElementById('radioMenorSi').checked;
+    const esMenorEdad = document.getElementById('radioMenorSi') ? document.getElementById('radioMenorSi').checked : false;
+
+    // Función helper para obtener texto del select de manera segura
+    function getSelectText(selectElement) {
+        if (!selectElement) {
+            return 'No especificado';
+        }
+        
+        if (selectElement.value === '-' || selectElement.selectedIndex === -1) {
+            return 'No especificado';
+        }
+        
+        return selectElement.options[selectElement.selectedIndex].text;
+    }
 
     // Obtener valores con formato adecuado
-    const tipoPersona = ddlTipoPersona.options[ddlTipoPersona.selectedIndex].text;
-    const tipoDocumento = ddlTipoDocumento.options[ddlTipoDocumento.selectedIndex].text;
-    const sexo = vSexo.options[vSexo.selectedIndex].text;
-    const grupoEtnico = vGrupoEtnico.options[vGrupoEtnico.selectedIndex].text;
-    const lenguaMaterna = vLenguaMaterna.options[vLenguaMaterna.selectedIndex].text;
-    const nacionalidad = vNacionalidad.options[vNacionalidad.selectedIndex].text;
+    const tipoPersona = getSelectText(ddlTipoPersona);
+    const tipoDocumento = getSelectText(ddlTipoDocumento);
+    const sexo = getSelectText(vSexo);
+    const grupoEtnico = getSelectText(vGrupoEtnico);
+    const lenguaMaterna = getSelectText(vLenguaMaterna);
+    const nacionalidad = getSelectText(vNacionalidad);
 
     // Obtener dependencia
-    let dependenciaInfo = 'No especificado';
-    if (ddlUnidadOrganica && ddlUnidadOrganica.value !== '-') {
-        dependenciaInfo = ddlUnidadOrganica.options[ddlUnidadOrganica.selectedIndex].text;
-    }
+    const dependenciaInfo = getSelectText(ddlUnidadOrganica);
 
     // Archivo adjunto
     const archivoInput = document.getElementById('file');
@@ -2016,31 +1960,37 @@ function recopilarDatosFormulario() {
         console.error('DEBUG error al leer ddlUnidadOrganica:', e);
     }
 
+    // Función helper para obtener valor de input de manera segura
+    function getInputValue(id, defaultValue = '') {
+        const element = document.getElementById(id);
+        return element ? (element.value || defaultValue) : defaultValue;
+    }
+
     return {
         tipoPersona: tipoPersona,
         tipoDocumento: tipoDocumento,
-        numeroDocumento: document.getElementById('txtNumDoc').value,
-        razonSocial: document.getElementById('txtRazonSocial').value,
-        apellidoPaterno: document.getElementById('txtApePat').value.toUpperCase(),
-        apellidoMaterno: document.getElementById('txtApeMat').value.toUpperCase(),
-        nombres: document.getElementById('txtNombre').value.toUpperCase(),
-        departamento: ddlDepartamento.options[ddlDepartamento.selectedIndex].text,
-        provincia: ddlProvincia.options[ddlProvincia.selectedIndex].text,
-        distrito: ddlDistrito.options[ddlDistrito.selectedIndex].text,
-        direccion: document.getElementById('txtDomicilio').value.toUpperCase(),
-        descripcion: document.getElementById('txtDescripcion').value.toUpperCase(),
-        busquedaInfo: document.getElementById('txtBusquedaInfo').value.toUpperCase(),
-        formaEntrega: ddlFormaEntrega.options[ddlFormaEntrega.selectedIndex].text,
-        formaNotificacion: ddlFormaNotificacion.options[ddlFormaNotificacion.selectedIndex].text,
-        telefono: document.getElementById('txtTelefono').value,
-        celular: document.getElementById('txtCelular').value,
-        email: document.getElementById('txtEmail').value,
+        numeroDocumento: getInputValue('txtNumDoc'),
+        razonSocial: getInputValue('txtRazonSocial'),
+        apellidoPaterno: getInputValue('txtApePat').toUpperCase(),
+        apellidoMaterno: getInputValue('txtApeMat').toUpperCase(),
+        nombres: getInputValue('txtNombre').toUpperCase(),
+        departamento: getSelectText(ddlDepartamento),
+        provincia: getSelectText(ddlProvincia),
+        distrito: getSelectText(ddlDistrito),
+        direccion: getInputValue('txtDomicilio').toUpperCase(),
+        descripcion: getInputValue('txtDescripcion').toUpperCase(),
+        busquedaInfo: getInputValue('txtBusquedaInfo').toUpperCase(),
+        formaEntrega: getSelectText(ddlFormaEntrega),
+        formaNotificacion: getSelectText(ddlFormaNotificacion),
+        telefono: getInputValue('txtTelefono'),
+        celular: getInputValue('txtCelular'),
+        email: getInputValue('txtEmail'),
         sexo: sexoFormateado,
-        edad: document.getElementById('vEdad').value,
+        edad: getInputValue('vEdad'),
         grupoEtnico: grupoEtnicoFormateado,
-        discapacidad: document.getElementById('cDiscapacidad').checked ? 'SI' : 'NO',
+        discapacidad: document.getElementById('cDiscapacidad') ? (document.getElementById('cDiscapacidad').checked ? 'SI' : 'NO') : 'NO',
         lenguaMaterna: lenguaMaternaFormateada,
-        nacionalidad: nacionalidad === 'PERUANA' ? 'PERÚ' : nacionalidad,
+        nacionalidad: nacionalidad === 'PERUANA' ? 'PERÚ' : (nacionalidad === 'No especificado' ? 'No especificado' : nacionalidad),
         dependenciaInfo: dependenciaInfo,
         adjuntaArchivo: adjuntaArchivo
     };
