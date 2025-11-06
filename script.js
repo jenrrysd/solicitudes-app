@@ -1802,11 +1802,11 @@ async function generarPDF() {
     }
 
 
-    // Generar número de expediente único usando el GeneradorExpediente global
-    const numeroExpedienteArchivo = await GeneradorExpediente.obtenerNumeroFormateado();
-
-    // Guardar el PDF con el nombre en formato: 2025-0214637.pdf
-    const nombreArchivo = numeroExpedienteArchivo + '.pdf';
+    // Usar el mismo número de expediente ya generado anteriormente
+    // const numeroExpedienteArchivo = await GeneradorExpediente.obtenerNumeroFormateado(); // REMOVIDO: evita duplicación
+    
+    // Guardar el PDF con el nombre en formato: 2025-0214637.pdf usando el número ya generado
+    const nombreArchivo = numeroExpediente + '.pdf';
     // Enviar el PDF al servidor para que lo guarde manteniendo el nombre original
     try {
         console.log('Generando blob del PDF...');
