@@ -355,19 +355,33 @@ select {
     gap: 5px;
 }
 
-/* Fila para "Otros:" y el input */
-/* .otros-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+:root {
+    --color_marca_agua: rgba(110, 109, 109, 0.15);
+    --tamano_fuente_marca: 5rem;
+    --rotacion_marca: -45deg;
 }
 
-.otros-label {
+body::after {
+    content: "SIN VALOR LEGAL";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(var(--rotacion_marca));
+    font-size: var(--tamano_fuente_marca);
+    color: var(--color_marca_agua);
+    pointer-events: none;
+    z-index: 9999;
+    user-select: none;
     font-weight: bold;
-    min-width: 60px;
+    font-family: sans-serif;
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
-.otros-input {
-    flex: 1;
-    max-width: 400px;
-} */
+/* Asegurar que el contenido esté por encima de la marca de agua si es necesario */
+#mostrarInformacion {
+    position: relative;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.85);
+    /* Fondo semitransparente para que se vea la marca pero el texto sea legible */
+}

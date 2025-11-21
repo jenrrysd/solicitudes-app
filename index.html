@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitud de Acceso a la Información Pública</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=1.1">
     <style>
         /* Permitir que las opciones del select se muestren en varias líneas cuando el texto sea largo */
         #ddlUnidadOrganica,
@@ -757,7 +757,10 @@
         <div class="linefiltro floatleft e2"></div>
 
         <div id="divMsjRespuesta"></div>
-    </div>
+
+        <!--Marca de agua - debe estar fuera del contenedor principal-->
+
+    </div> <!-- Cierre del contenedor principal -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             //obtener ip
@@ -875,11 +878,11 @@
     </script>
     <script>
         // Configuración automática - usar URLs relativas
-        (function() {
+        (function () {
             // Usar URLs relativas (mismo dominio y puerto)
             window.UPLOAD_PDF_URL = '/upload-pdf';
             window.API_BASE_URL = '/api';
-            
+
             console.log('🌐 URLs configuradas:');
             console.log(' - Upload:', window.UPLOAD_PDF_URL);
             console.log(' - API:', window.API_BASE_URL);
@@ -981,7 +984,8 @@
     @media (max-width: 480px) {
         #divGrabar {
             /*justify-content: center;*/
-            bottom: 300px; /* Aún más arriba en pantallas muy pequeñas */
+            bottom: 300px;
+            /* Aún más arriba en pantallas muy pequeñas */
             right: 15px;
         }
 
